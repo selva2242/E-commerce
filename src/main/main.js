@@ -60,10 +60,10 @@ mainTemplate.innerHTML = `
                 <span id="section-title" ></span>
                 <div class='sort_by'>
                     <h4> Sort By </h4>
-                    <select name='sort_by' id='sort_by'>
+                    <select name='sort_by' id='sort_by_select'>
                         <option name='recommended'>Recommended</option>
                         <option name='popular'>Popular</option>
-                        <option name='price low to high'>Price Low to High</option>
+                        <option name='price_low_to_high'>Price Low to High</option>
                     </select>
                 </div>    
                 <div class = 'product_category'>
@@ -153,6 +153,14 @@ class Main extends HTMLElement{
         }
     }
 
+    //hanlde sort by option change
+    handleSortByOptionChange(option){
+        if(this.sort_by != option){
+            this.sort_by = option.toLowerCase().replaceAll(" ", "_");
+            this.getProducts();
+        }
+    }
+
     // Cards for all products
     displayProducts(){
         this.shadowRoot.querySelector('.products-sub-container').innerHTML = ``;
@@ -171,6 +179,8 @@ class Main extends HTMLElement{
         this.type = type;
         this.shadowRoot.appendChild(mainTemplate.content.cloneNode(true));
         this.shadowRoot.querySelector('#section-title').innerText = `${type.toUpperCase()} ZONE`
+        const sortbyDropdown = this.shadowRoot.querySelector('#sort_by_select')
+        sortbyDropdown.addEventListener('change', ()=>this.handleSortByOptionChange(sortbyDropdown.value))        
         this.getCategories();
         this.getProducts();
     }
@@ -178,10 +188,12 @@ class Main extends HTMLElement{
     disconnectedCallback(){
         // removing eventlistners to the radio buttons
         this.shadowRoot.querySelectorAll("input[name='product_category']").forEach((option) => {
-            option.removeEventListener('change');
+            option.removeEventListener('change', () => this.handleCategoryChange(option));
         });
+        const sortbyDropdown = this.shadowRoot.querySelector('#sort_by_select')
+        sortbyDropdown.addEventListener('change', ()=>this.handleSortByOptionChange(sortbyDropdown.value))
+
     }
 }
 
 window.customElements.define('main-container', Main);
-
