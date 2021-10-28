@@ -17,7 +17,7 @@ footerTemplate.innerHTML = `
     </div>
 `
 
-class Footer extends HTMLElement{
+export default class Footer extends HTMLElement{
     constructor(){
         super();
         this.attachShadow({mode : 'open'});

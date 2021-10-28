@@ -41,7 +41,7 @@ productCardTemplate.innerHTML = `
     </div>
 `
 
-class ProductCard extends HTMLElement{
+export default class ProductCard extends HTMLElement{
     constructor(){
         super();
         this.attachShadow({mode : 'open'});

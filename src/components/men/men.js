@@ -1,6 +1,5 @@
-
-const mainTemplate = document.createElement('template');
-mainTemplate.innerHTML = `
+const menTemplate = document.createElement('template');
+menTemplate.innerHTML = `
     <style>
        .main-container{
            margin-top : 80px;
@@ -54,7 +53,7 @@ mainTemplate.innerHTML = `
             padding-top : 20px
         }
     </style>
-    <div class = 'main-container'>
+    <div>
         <div class = 'side-bar' >
             <div class = 'sidebar-container'>
                 <span id="section-title" ></span>
@@ -93,13 +92,13 @@ radioButtonTemplate.innerHTML = `
 `
 const base_url = "https://affa3119-3422-4d51-9960-175dc13ad4bf.mock.pstmn.io"
 
-class Main extends HTMLElement{
+export default class Men extends HTMLElement{
     constructor(){
         super();
         this.attachShadow({mode : 'open'})
         this.products = []
         this.categories = []
-        this.type = '';
+        this.type = 'men';
         this.category = 'all';
         this.sort_by = 'recommended';
     }
@@ -175,10 +174,8 @@ class Main extends HTMLElement{
     }
 
     connectedCallback(){
-        const type = this.getAttribute('type');
-        this.type = type;
-        this.shadowRoot.appendChild(mainTemplate.content.cloneNode(true));
-        this.shadowRoot.querySelector('#section-title').innerText = `${type.toUpperCase()} ZONE`
+        this.shadowRoot.appendChild(menTemplate.content.cloneNode(true));
+        this.shadowRoot.querySelector('#section-title').innerText = `${this.type.toUpperCase()} ZONE`
         const sortbyDropdown = this.shadowRoot.querySelector('#sort_by_select')
         sortbyDropdown.addEventListener('change', ()=>this.handleSortByOptionChange(sortbyDropdown.value))        
         this.getCategories();
@@ -196,4 +193,4 @@ class Main extends HTMLElement{
     }
 }
 
-window.customElements.define('main-container', Main);
+window.customElements.define('men-section', Men);
