@@ -20,12 +20,29 @@ export default class Main extends HTMLElement{
         this.attachShadow({mode : "open"})
     }
 
-    connectedCallback(){
-        const type = this.getAttribute('type');
+    static get observedAttributes() {
+        return ['type'];
+    }
+
+    generatePage(type){
         this.shadowRoot.appendChild(mainTemplate.content.cloneNode(true));
         const pageFactory = new PageFactory();
         const page = pageFactory.createPage(type)
-        this.shadowRoot.querySelector('.main-container').appendChild(page.element);
+        const mainContainer = this.shadowRoot.querySelector('.main-container');
+        mainContainer.innerHTML = ``;
+        mainContainer.appendChild(page.element);
+    }
+
+    connectedCallback(){
+        // this.generatePage();
+    }
+
+    attributeChangedCallback(){
+        this.innerHTML = ``;
+        const type = this.getAttribute('type');
+        if(type){
+            this.generatePage(type);
+        }
     }
 }
 

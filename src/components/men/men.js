@@ -1,3 +1,5 @@
+import { base_url  } from "../../../config";
+
 const menTemplate = document.createElement('template');
 menTemplate.innerHTML = `
     <style>
@@ -90,8 +92,6 @@ radioButtonTemplate.innerHTML = `
     <label for='all'>All</label>
     <br>
 `
-const base_url = "https://affa3119-3422-4d51-9960-175dc13ad4bf.mock.pstmn.io"
-
 export default class Men extends HTMLElement{
     constructor(){
         super();
