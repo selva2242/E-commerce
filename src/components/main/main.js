@@ -37,12 +37,15 @@ export default class Main extends HTMLElement{
         // this.generatePage();
     }
 
-    attributeChangedCallback(){
-        this.innerHTML = ``;
-        const type = this.getAttribute('type');
-        if(type){
-            this.generatePage(type);
+    attributeChangedCallback(name, oldvalue, newvalue){
+        if(name === "type"){
+            this.innerHTML = ``;
+            const type = this.getAttribute('type');
+            if(type){
+                this.generatePage(type);
+            }
         }
+        
     }
 }
 

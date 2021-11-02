@@ -5,3 +5,4 @@ import Men from "./src/components/men/men";
 import Main from "./src/components/main/main";
 import ProductCard  from "./src/components/productCard/productCard";
 import Women from "./src/components/women/women";
+import Sidebar from "./src/components/sidebar/sidebar";

@@ -1,7 +1,8 @@
 import { base_url  } from "../../../config";
+import { publishSubscribe } from "../../publishSubscribe";
 
-const mainTemplate = document.createElement('template');
-mainTemplate.innerHTML = `
+const kidTemplate = document.createElement('template');
+kidTemplate.innerHTML = `
     <style>
        .main-container{
            margin-top : 80px;
@@ -17,23 +18,6 @@ mainTemplate.innerHTML = `
            flex-wrap : wrap;
            overflow : auto;
        }
-       #available-product-count{
-            font-size : 18px;
-            font-weight : 500;
-            margin-left : 20px;
-       }
-       .sidebar-container {
-            position : fixed;
-            width : 150px;
-            left : 0;
-            height : 100%;
-            border-right: 2px solid #eff3f6;
-            background: #f5f8fa;
-            padding : 20px;
-        }
-        .sort_by{
-            padding : 10px 0;
-        }
         #product-search{
             margin-top : 20px;
             cursor : pointer;
@@ -51,34 +35,29 @@ mainTemplate.innerHTML = `
             position : fixed;
             width : 100%
         }
-        #available-product-count{
-            padding-top : 20px
+        #products-info-bar{
+            padding : 30px 0px;
+            display : flex;
+            justify-content : space-evenly;
+        }
+        .product-info-title{
+            font-size : 18px;
+            font-weight : 500;
+            color : #4040a1;
         }
     </style>
-    <div class = 'main-container'>
+    <div>
         <div class = 'side-bar' >
-            <div class = 'sidebar-container'>
-                <span id="section-title" ></span>
-                <div class='sort_by'>
-                    <h4> Sort By </h4>
-                    <select name='sort_by' id='sort_by_select'>
-                        <option name='recommended'>Recommended</option>
-                        <option name='popular'>Popular</option>
-                        <option name='price_low_to_high'>Price Low to High</option>
-                    </select>
-                </div>    
-                <div class = 'product_category'>
-                    <h4> Category </h4>
-                    <form id='category-form'>
-                        
-                    </form>
-                    
-                </div>   
-            </div>
+            <side-bar> </side-bar>
         </div>
         <div class = 'products-container'>
-            <div id='available-product-count'>
-                    
+            <div id = 'products-info-bar'>   
+                <div class = "product-info-title" id='available-product-count'>
+                </div> 
+                <div class = "product-info-title" id='current-category'>
+                </div>  
+                <div class = "product-info-title" id='current-sort-by'>
+                </div> 
             </div>
             <div class = 'products-sub-container'>
             </div>
@@ -86,19 +65,12 @@ mainTemplate.innerHTML = `
     <div>
 `;
 
-const radioButtonTemplate = document.createElement('template');
-radioButtonTemplate.innerHTML = `
-    <input type='radio' name='product_category' value='all'>
-    <label for='all'>All</label>
-    <br>
-`
 
 export default class Kid extends HTMLElement{
     constructor(){
         super();
         this.attachShadow({mode : 'open'})
         this.products = []
-        this.categories = []
         this.type = 'kid';
         this.category = 'all';
         this.sort_by = 'recommended';
@@ -107,6 +79,7 @@ export default class Kid extends HTMLElement{
     // Fetching Products
     async getProducts(){
         try{
+            
             const response = await fetch(`${base_url}/${this.type}/products/${this.category}/${this.sort_by}`)
             const json = await response?.json()
             this.products = json?.products;
@@ -114,51 +87,6 @@ export default class Kid extends HTMLElement{
         }catch(err){
                 console.log('Error Fetching the Products', err)
         }       
-    }
-
-    // Fetching products
-    async getCategories(){
-        try{
-            const response = await fetch(`${base_url}/${this.type}/products/categories`)
-            const json = await response?.json()
-            this.categories = json?.categories;
-            this.displayCategories();
-        }catch(err){
-                console.log('Error Fetching the Categories', err)
-        }
-    }
-
-    displayCategories(){
-        
-        // creating radio buttons based on categories  
-        this.categories.forEach(category => {
-            const categoryNode = this.shadowRoot.querySelector('#category-form');
-            let clone = radioButtonTemplate.content.cloneNode(true);
-            clone.querySelector('input').setAttribute( 'value', category.toLowerCase());
-            clone.querySelector('label').innerText = category;
-            categoryNode.appendChild(clone);  
-        })
-
-        // adding event listener to radio buttons
-        this.shadowRoot.querySelectorAll("input[name='product_category']").forEach((option) => {
-            option.addEventListener('change', () => this.handleCategoryChange(option));
-        });
-    }
-    
-    // Handling the category option change
-    handleCategoryChange(option){
-        if(this.category != option.value){
-            this.category = option.value;
-            this.getProducts();
-        }
-    }
-
-    //hanlde sort by option change
-    handleSortByOptionChange(option){
-        if(this.sort_by != option){
-            this.sort_by = option.toLowerCase().replaceAll(" ", "_");
-            this.getProducts();
-        }
     }
 
     // Cards for all products
@@ -171,26 +99,39 @@ export default class Kid extends HTMLElement{
             productCard.setAttribute('id', product.id)
             this.shadowRoot.querySelector('.products-sub-container')?.appendChild(productCard);       
        })
-        this.shadowRoot.querySelector('#available-product-count').innerText = `Available Products : ${this.products.length}`
+        this.shadowRoot.querySelector('#available-product-count').innerText = `AVAILABLE : ${this.products.length}`
+        this.shadowRoot.querySelector('#current-category').innerText = `CATEGORY : ${this.category.charAt(0).toUpperCase() + this.category.slice(1)}`
+        this.shadowRoot.querySelector('#current-sort-by').innerText = `SORT BY : ${this.sort_by.charAt(0).toUpperCase() + this.sort_by.slice(1)}`
+
+    }
+
+    handleCategoryChange(data){
+        if(data && data.category && this.category!==data.category){
+            this.category = data.category
+            this.getProducts()
+        }
+    }
+
+    handleSortByChange(data){
+        if(data && data.sort_by && this.sort_by!==data.sort_by){
+            this.sort_by = data.sort_by
+            this.getProducts()
+        }
     }
 
     connectedCallback(){
-        this.shadowRoot.appendChild(mainTemplate.content.cloneNode(true));
-        this.shadowRoot.querySelector('#section-title').innerText = `${this.type.toUpperCase()} ZONE`
-        const sortbyDropdown = this.shadowRoot.querySelector('#sort_by_select')
-        sortbyDropdown.addEventListener('change', ()=>this.handleSortByOptionChange(sortbyDropdown.value))        
-        this.getCategories();
+        this.shadowRoot.appendChild(kidTemplate.content.cloneNode(true));
+        this.shadowRoot.querySelector('side-bar').setAttribute("type", this.type)
+        // subscribing to the publish subscribe 
+        publishSubscribe.subscribe('categoryChange', (data) => this.handleCategoryChange(data))
+        publishSubscribe.subscribe('sortByChange', (data) => this.handleSortByChange(data))
         this.getProducts();
     }
 
     disconnectedCallback(){
-        // removing eventlistners to the radio buttons
-        this.shadowRoot.querySelectorAll("input[name='product_category']").forEach((option) => {
-            option.removeEventListener('change', () => this.handleCategoryChange(option));
-        });
-        const sortbyDropdown = this.shadowRoot.querySelector('#sort_by_select')
-        sortbyDropdown.addEventListener('change', ()=>this.handleSortByOptionChange(sortbyDropdown.value))
-
+        // unsubscribing to the publish subscribe 
+        publishSubscribe.unsubscribe('categoryChange', (data) => this.handleCategoryChange(data))
+        publishSubscribe.unsubscribe('sortByChange', (data) => this.handleSortByChange(data))
     }
 }
 
